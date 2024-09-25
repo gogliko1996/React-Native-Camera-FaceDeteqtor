@@ -1,20 +1,37 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect } from "react";
+
+import { useCameraPermission } from "react-native-vision-camera";
+import { CameraDetector } from "./src/screen/CameraDetector/CameraDetector";
+
+import {
+  RNMLKitFaceDetectionContextProvider,
+  RNMLKitFaceDetectorOptions,
+  useFaceDetector,
+} from "@infinitered/react-native-mlkit-face-detection";
+
+const CUSTOM_OPTIONS: RNMLKitFaceDetectorOptions = {
+  performanceMode: "fast",
+  landmarkMode: false,
+  contourMode: true,
+  classificationMode: true,
+  minFaceSize: 0.01,
+  isTrackingEnabled: true,
+};
 
 export default function App() {
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const detector = useFaceDetector()
+
+  useEffect(() => {
+    if (!hasPermission) {
+      requestPermission();
+    }
+    detector.initialize()
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <RNMLKitFaceDetectionContextProvider options={CUSTOM_OPTIONS} deferInitialization >
+      <CameraDetector />
+    </RNMLKitFaceDetectionContextProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
